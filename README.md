@@ -1,4 +1,4 @@
-# vue-admin-codex
+# art-assets-front
 
 ## Project setup
 ```

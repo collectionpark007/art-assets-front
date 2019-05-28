@@ -1,10 +1,31 @@
 <template>
   <div class="layout-index-container">
-    <el-container>
-      <el-aside>
-        <Sidebar />
+    <el-container style="height: 100vh;">
+      <el-aside class="aside-container" :class="{'collapse': isCollapse}">
+        <Sidebar :isCollapse="isCollapse" />
       </el-aside>
-      <router-view/>
+      <el-container>
+        <el-header class="header">
+          <div class="left">
+            <a href="javascript:;" class="fold" @click="toggleMenu">
+              <i :class="[isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold']"></i>
+            </a>
+          </div>
+          <div class="right">
+            <el-dropdown>
+              <span><i class="el-icon-setting" style="margin-right: 15px"></i>王小虎</span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>查看</el-dropdown-item>
+                <el-dropdown-item>新增</el-dropdown-item>
+                <el-dropdown-item>删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+        </el-header>
+        <el-main>
+          <router-view/>
+        </el-main>
+      </el-container>
     </el-container>
   </div>
 </template>
@@ -19,9 +40,30 @@ import Sidebar from './sidebar.vue'
   }
 })
 export default class Layout extends Vue{
-  
+  isCollapse: boolean = true;
+  toggleMenu() {
+    this.isCollapse = !this.isCollapse;
+  }
 }
 </script>
 <style lang="less" scoped>
-
+.layout-index-container{
+  .aside-container{
+    width: 210px !important;
+    transition: all 300ms;
+    &.collapse{
+      width: 64px !important;
+    }
+  }
+  .header{
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 4px rgba(0,21,41,.08);
+    .fold{
+      font-size: 24px;
+    }
+  }
+}
 </style>

@@ -26,6 +26,7 @@ export default new Router({
       path: '/about',
       name: 'about',
       component: Layout,
+      meta
       children: [
         {
           path: 'a',
