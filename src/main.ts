@@ -7,6 +7,8 @@ import './styles/default.less'
 import './styles/common.less'
 import 'element-ui/lib/theme-chalk/index.css';
 
+import './permission'
+
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 

@@ -10,19 +10,23 @@
             <a href="javascript:;" class="fold" @click="toggleMenu">
               <i :class="[isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold']"></i>
             </a>
+            <Breadcrumb />
           </div>
           <div class="right">
             <el-dropdown>
-              <span><i class="el-icon-setting" style="margin-right: 15px"></i>王小虎</span>
+              <span><i class="el-icon-setting" style="margin-right: 15px"></i>{{userInfo.username}}</span>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>查看</el-dropdown-item>
-                <el-dropdown-item>新增</el-dropdown-item>
-                <el-dropdown-item>删除</el-dropdown-item>
+                <el-dropdown-item>
+                  <router-link to="/">首页</router-link>
+                </el-dropdown-item>
+                <el-dropdown-item divided>
+                  <a href="javascript:;" @click="logout">退出登录</a>
+                </el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </div>
         </el-header>
-        <el-main>
+        <el-main class="main-container">
           <router-view/>
         </el-main>
       </el-container>
@@ -33,16 +37,27 @@
 import Vue from 'vue'
 import { Component } from "vue-property-decorator";
 import Sidebar from './sidebar.vue'
+import Breadcrumb from '@/components/Breadcrumb/index.vue'
 
 @Component({
   components: {
-    Sidebar
+    Sidebar,
+    Breadcrumb
   }
 })
 export default class Layout extends Vue{
   isCollapse: boolean = true;
+  userInfo: any = {};
   toggleMenu() {
     this.isCollapse = !this.isCollapse;
+  }
+  logout() {
+    this.$store.dispatch('logout').then(() => {
+      this.$router.replace(`/passport/login?redirect=${this.$route.path}`)
+    })
+  }
+  created() {
+    this.userInfo = this.$store.getters.userInfo;
   }
 }
 </script>
@@ -63,7 +78,15 @@ export default class Layout extends Vue{
     box-shadow: 0 1px 4px rgba(0,21,41,.08);
     .fold{
       font-size: 24px;
+      margin-right: 20px;
     }
+    .left{
+      display: flex;
+      align-items: center;
+    }
+  }
+  .main-container{
+    min-width: 1000px;
   }
 }
 </style>

@@ -9,17 +9,22 @@
       text-color="#bfcbd9"
       active-text-color="#409eff"
       :default-active="defaultActive">
-      <el-menu-item index="/dashboard/index" route="/dashboard/index">
-        <i class="el-icon-house"></i>
-        <span slot="title">仪表盘</span>
-      </el-menu-item>
-      <el-submenu index="1">
-        <template slot="title">
-          <i class="el-icon-location"></i>
-          <span>about</span>
-        </template>
-        <el-menu-item index="/about/a" route="/about/a">a</el-menu-item>
-      </el-submenu>
+      <div v-for="item in menuList" :key="item.name">
+        <el-menu-item :index="item.path" :route="item.path" v-if="!item.children || item.children.length <= 1">
+          <i :class="item.icon"></i>
+          <span slot="title">{{item.name}}</span>
+        </el-menu-item>
+        <el-submenu :index="item.name" v-else>
+          <template slot="title">
+            <i :class="item.icon"></i>
+            <span>{{item.name}}</span>
+          </template>
+          <el-menu-item v-for="child in item.children" :key="child.name" :index="child.path" :route="child.path">
+            <i :class="child.icon"></i>
+            <span>{{child.name}}</span>
+          </el-menu-item>
+        </el-submenu>
+      </div>
     </el-menu>
   </div>
 </template>
@@ -32,9 +37,10 @@ export default class Sidebar extends Vue{
   @Prop({default: true}) readonly isCollapse!: boolean;
 
   defaultActive: string = '';
+  menuList: any[] = [];
   created() {
     this.defaultActive = this.$route.path;
-    console.log(this.$route.path);
+    this.menuList = this.$store.state.menuList;
   }
 }
 </script>
@@ -50,6 +56,17 @@ export default class Sidebar extends Vue{
     .el-menu-vertical {
       width: 64px;
       transition: all 300ms;
+    }
+  }
+}
+</style>
+<style lang="less">
+.sidebar-index-container {
+  &.collapse {
+    .el-submenu__title{
+      span{
+        display: none;
+      }
     }
   }
 }

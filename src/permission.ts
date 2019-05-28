@@ -13,6 +13,12 @@ router.beforeEach((to, from, next) => {
     if (to.path.includes('/passport')) {
       NProgress.done();
       next('/');
+    } else if (store.state.menuList === null) {
+      store.dispatch('getMenuList').then((menuList) => {
+        store.commit('SET_MENU_LIST', menuList);
+        NProgress.done();
+        next({ ...to });
+      })
     } else {
       next();
     }
