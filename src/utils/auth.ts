@@ -10,6 +10,15 @@ export const setToken = (token: string) => {
   });
 }
 
+export const getUserToken = () => {
+  let result: any = {token: ''};
+  const userToken = Cookie.get(TokenKey);
+  if (userToken) {
+    result = JSON.parse(userToken);
+  }
+  return result.token;
+}
+
 export const clearToken = () => {
   Cookie.remove(TokenKey);
 }

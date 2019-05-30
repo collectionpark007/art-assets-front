@@ -38,6 +38,8 @@ import Vue from 'vue'
 import { Component } from "vue-property-decorator";
 import Sidebar from './sidebar.vue'
 import Breadcrumb from '@/components/Breadcrumb/index.vue'
+import http from '@/api'
+import { clearToken } from '@/utils/auth';
 
 @Component({
   components: {
@@ -52,7 +54,9 @@ export default class Layout extends Vue{
     this.isCollapse = !this.isCollapse;
   }
   logout() {
-    this.$store.dispatch('logout').then(() => {
+    http.common.logout().then(() => {
+      this.$store.state.userInfo = null;
+      clearToken();
       this.$router.replace(`/passport/login?redirect=${this.$route.path}`)
     })
   }
@@ -79,6 +83,9 @@ export default class Layout extends Vue{
     .fold{
       font-size: 24px;
       margin-right: 20px;
+      &:hover{
+        will-change: width;
+      }
     }
     .left{
       display: flex;

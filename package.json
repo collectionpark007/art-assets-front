@@ -9,9 +9,11 @@
   "dependencies": {
     "@types/js-cookie": "^2.2.2",
     "@types/nprogress": "^0.0.29",
+    "axios": "^0.18.0",
     "core-js": "^2.6.5",
     "element-ui": "^2.8.2",
     "js-cookie": "^2.2.0",
+    "lrz": "^4.9.40",
     "nprogress": "^0.2.0",
     "vue": "^2.6.10",
     "vue-class-component": "^7.0.2",

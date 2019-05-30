@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { setToken, clearToken, getToken } from './utils/auth';
-import { routeObj } from './router';
+import router, { routeObj } from './router';
+import http from '@/api'
 
 Vue.use(Vuex)
 
@@ -47,10 +48,14 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    logout() {
+    logout(store, redirect: string = '/') {
       return new Promise((resolve, reject) => {
-        clearToken();
-        resolve()
+        http.common.logout().then(() => {
+          store.state.userInfo = null;
+          clearToken();
+          router.replace(`/passport/login?redirect=${redirect}`)
+          resolve()
+        })
       })
     },
     getMenuList() {

@@ -14,10 +14,10 @@
         <el-form-item prop="password" class="item-container">
           <div class="inputdiv">
             <i class="el-icon-lock"></i>
-            <input type="password" placeholder="密码" v-model="form.password" />
+            <input type="password" placeholder="密码" v-model="form.password" @keydown.enter="submit" />
           </div>
         </el-form-item>
-        <el-button class="login-btn" type="primary" @click="submit">登录</el-button>
+        <el-button class="login-btn" type="primary" @click="submit" :loading="loading">登录</el-button>
       </el-form>
     </div>
   </div>
@@ -25,6 +25,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
+import getEncryptedStr from '@/rsa'
+import http from '@/api'
 
 interface loginModal {
   username: string,
@@ -33,6 +35,7 @@ interface loginModal {
 
 @Component
 export default class PassportLogin extends Vue {
+  loading: boolean = false;
   form: loginModal = {
     username: '',
     password: ''
@@ -48,15 +51,36 @@ export default class PassportLogin extends Vue {
   }
   submit() {
     this.$refs.loginForm.validate((valid: boolean) => {
-      console.log(valid);
       if (valid) {
-        const userInfo = {
-          username: '昌',
-          roles: ['guest'],
-          token: '123'
-        }
-        this.$store.commit('SET_USER_INFO', userInfo);
-        this.toPage();
+        const { form } = this;
+        this.loading = true;
+        http.common.getKey().then((res: any) => {
+          const publicKey = res.info.modulus;
+          const exponent = res.info.exponent;
+          const enPassword = getEncryptedStr(form.password, publicKey, exponent);
+          return http.common.login({
+            publicKey,
+            enPassword,
+            mobile: form.username,
+          })
+        }).then((res: any) => {
+          this.loading = false;
+          this.$notify({
+            title: '提示',
+            message: res.info.msg,
+            type: 'success'
+          })
+          const userInfo = {
+            username: form.username,
+            roles: ['admin'],
+            token: res.info.loginKey
+          }
+          this.$store.commit('SET_USER_INFO', userInfo);
+          this.toPage();
+        }).catch(() => {
+          this.loading = false;
+        })
+        
       }
     })
   }

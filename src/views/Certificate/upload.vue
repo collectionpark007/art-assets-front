@@ -1,82 +1,73 @@
 <template>
   <div class="cert-upload-container">
-    <el-form label-position="top">
+    <el-form label-position="top" :model="form">
       <el-form-item label="图片">
         <div class="upload-container">
           <input type="file" ref="uploader" class="uploader">
-          <i class="el-icon-upload"></i>
-          <img class="image" src="" alt="">
+          <i class="el-icon-upload" v-if="!form.imageUrl"></i>
+          <img class="image" v-else-if="imgFile" :src="imgFile" alt="">
+          <img class="image" v-else-if="form.imageUrl" :src="form.imageUrl" alt="">
         </div>
       </el-form-item>
       <el-form-item label="基本信息" style="margin-bottom: 0;">
         <div class="item">
           <span class="label">艺术品名称：</span>
-          <div class="inputdiv"><el-input style="width: 320px;" placeholder="请输入商品名称/SPU"></el-input></div>
+          <div class="inputdiv"><el-input v-model="form.name" style="width: 320px;" placeholder="请输入商品名称/SPU"></el-input></div>
         </div>
-        <div class="group">
-          <div class="item">
-            <span class="label">艺术品类别：</span>
-            <div class="inputdiv">
-              <el-select v-model="form.category">
-                <el-option
-                  v-for="item in categoryOption"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-            </div>
-          </div>
-          <div class="item">
-            <span class="label">艺术品年代：</span>
-            <div class="inputdiv">
-              <el-select v-model="form.year">
-                <el-option
-                  v-for="item in yearsOption"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-            </div>
-          </div>
-          <div class="item">
-            <span class="label">艺术品材质：</span>
-            <div class="inputdiv">
-              <el-select v-model="form.material">
-                <el-option
-                  v-for="item in materialOption"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
-              </el-select>
-            </div>
+        <div class="item" v-for="(item, index) in specificationList" :key="item.id">
+          <span class="label">艺术品{{item.specificationName}}：</span>
+          <div class="inputdiv">
+            <el-select
+              v-if="refreshSelect"
+              v-model="selectData[item.specificationId][0]"
+              @change="onChangeParentId(item.specificationId, index)"
+            >
+              <el-option
+                v-for="item in options[index][item.specificationId].option"
+                :key="item.id"
+                :label="item.specificationValue"
+                :value="item.id"
+              ></el-option>
+            </el-select>
+            <el-select
+              class="selectItem"
+              v-for="(child, x) in options[index][item.specificationId].children"
+              :key="child.specificationId"
+              v-model="selectData[item.specificationId][x + 1]"
+              @change="onChangeChildId(selectData[item.specificationId][0], selectData[item.specificationId][x + 1], index)"
+            >
+              <el-option
+                v-for="childItem in child.option"
+                :key="childItem.id"
+                :label="childItem.specificationValue"
+                :value="childItem.id"
+              ></el-option>
+            </el-select>
           </div>
         </div>
         <div class="group">
           <div class="item mult">
             <span class="label">物理属性：</span>
             <div class="inputdiv">
-              <el-input placeholder="长" class="input">
+              <el-input placeholder="长" class="input" v-model="physical[0]">
                 <span slot="suffix">cm</span>
               </el-input>
             </div>
             <span>*</span>
             <div class="inputdiv">
-              <el-input placeholder="宽" class="input">
+              <el-input placeholder="宽" class="input" v-model="physical[1]">
                 <span slot="suffix">cm</span>
               </el-input>
             </div>
             <span>*</span>
             <div class="inputdiv">
-              <el-input placeholder="高" class="input">
+              <el-input placeholder="高" class="input" v-model="physical[2]">
                 <span slot="suffix">cm</span>
               </el-input>
             </div>
             <span>*</span>
             <div class="inputdiv">
-              <el-input placeholder="重量" class="input">
+              <el-input placeholder="重量" class="input" v-model="physical[3]">
                 <span slot="suffix">g</span>
               </el-input>
             </div>
@@ -84,23 +75,23 @@
         </div>
         <div class="item">
           <span class="label">Symbol：</span>
-          <div class="inputdiv"><el-input style="width: 320px;" placeholder="请输入Symbol"></el-input></div>
+          <div class="inputdiv"><el-input v-model="form.certificateSymbol" style="width: 320px;" placeholder="请输入Symbol"></el-input></div>
         </div>
         <div class="item">
           <span class="label">是否私有：</span>
           <div class="radiodiv">
-            <el-radio-group v-model="form.resource">
-              <el-radio label="0">否</el-radio>
-              <el-radio label="1">是</el-radio>
+            <el-radio-group v-model="form.isPrivate">
+              <el-radio :label="0">否</el-radio>
+              <el-radio :label="1">是</el-radio>
             </el-radio-group>
           </div>
         </div>
         <div class="item">
           <span class="label">是否上链：</span>
           <div class="radiodiv">
-            <el-radio-group v-model="form.resource">
-              <el-radio label="0">否</el-radio>
-              <el-radio label="1">是</el-radio>
+            <el-radio-group v-model="form.uploadBlockChain">
+              <el-radio :label="0">否</el-radio>
+              <el-radio :label="1">是</el-radio>
             </el-radio-group>
           </div>
         </div>
@@ -110,7 +101,7 @@
           type="textarea"
           :autosize="{ minRows: 2, maxRows: 10}"
           placeholder="请输入相关描述"
-          v-model="form.content">
+          v-model="form.desc">
         </el-input>
       </el-form-item>
       <div class="handle-container">
@@ -122,14 +113,257 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
+import http from '@/api'
+import { Watch } from 'vue-property-decorator';
+import lrz from 'lrz';
+
+interface optionModal {
+  index: number,
+  parentId: number,
+  childId?: number,
+  data: any
+}
 
 @Component({})
 export default class CertUpload extends Vue{
-  categoryOption: any[] = []
-  form: any = {}
+  options: any[] = [
+    {},
+    {},
+    {}
+  ]
+  physical: string[] = ['', '', '', ''];
+  refreshSelect: boolean = false;
+  selectData: any = {};
+  specificationList: any[] = [];
+  form: any = {
+    name: '',
+    physical: '',
+    blockChainType: 1,
+    memo: 'test'
+  }
+  file: any = '';
+  imgFile: any = '';
+  id: string = '';
+
+  getDetail() {
+    const { id } = this;
+    http.home.detail({
+      id
+    }).then((res: any) => {
+      this.form = res.info;
+    })
+  }
+
+  setOptionData(params: optionModal) {
+    if (typeof params.parentId !== 'number') {
+      throw new Error('setOptionData parentId 不能为空');
+      return;
+    }
+    if (typeof params.childId === 'number') {
+      if (typeof this.options[params.index][params.parentId].children === 'undefined') {
+        this.options[params.index][params.parentId].children = {}
+      }
+      if (typeof this.options[params.index][params.parentId].children[params.childId] === 'undefined') {
+        this.options[params.index][params.parentId].children[params.childId] = {};
+      }
+      this.options[params.index][params.parentId].children[params.childId].option = params.data;
+    } else {
+      console.log(this.options, params.index, params.parentId);
+      if (typeof this.options[params.index][params.parentId] === 'undefined') {
+        this.options[params.index][params.parentId] = {};
+      }
+      this.options[params.index][params.parentId].option = params.data;
+    }
+  }
+
+  getCategoryOption(array: number[]): Promise<any[]> {
+    const promiseArray = array.map(item => {
+      return this.findBySpecificationId(item);
+    })
+    return new Promise((resolve, reject) => {
+      Promise.all(promiseArray).then((values: any[]) => {
+        const result = values.map(item => {
+          return item.info[0]
+        })
+        resolve(result);
+      })
+    })
+  }
+
+  createBodyFormData(): FormData {
+    const formData = new FormData();
+    const selectData = this.selectData;
+    const specArray = this.specificationList.map(item => `${item.specificationId}_${item.specificationName}`)
+    Object.keys(selectData).forEach((key, index) => {
+      const ids = selectData[key].filter((item: number) => !!item);
+      const body = `${specArray[index]},${this.createBody(ids, index)}`;
+      formData.append('body', body);
+    })
+    return formData;
+  }
+
+  createBody(ids: any[], index: number) {
+    let result: string[] = [];
+    ids.forEach(id => {
+      const name = this.findSpecNameById(id);
+      result.push(`${id}_${name}`);
+    })
+    return result.join(',');
+  }
+
+  sear(obj: any, deep: any, arr: any) {
+    !arr[deep] ? (arr[deep] = Object.keys(obj) ) : (arr[deep] = arr[deep].concat(Object.keys(obj)));
+    for(let key in obj) {
+      if(typeof obj[key] === 'object') {
+        this.sear(obj[key], deep+1,arr);
+      }
+    }
+    return arr;
+  }
+
+  object2array(obj: any) {
+    let result: any[] = [];
+    Object.keys(obj).forEach(x => {
+      if (obj[x].children && Object.keys(obj[x].children).length > 0) {
+        Object.keys(obj[x].children).forEach(y => {
+          result = result.concat(obj[x].children[y].option);
+        })
+      }
+      result = result.concat(obj[x].option)
+    })
+    return result;
+  }
+
+  findSpecNameById(id: number): string {
+    const options = this.options;
+    let array: any[] = []
+    options.forEach(obj => {
+      array = array.concat(this.object2array(obj))
+    })
+    const index = array.findIndex(item => item.id === id);
+    if (index > -1) {
+      return array[index].specificationValue;
+    }
+    return '';
+  }
+
+  refreshSelectFn() {
+    this.refreshSelect = false;
+    setTimeout(() => {
+      this.refreshSelect = true;
+    }, 0);
+  }
+
+  findBySpecificationId(specificationId: number) {
+    return http.category.findBySpecificationId({
+      specificationId
+    })
+  }
+  getCategoryDetail(id: number) {
+    http.category.detail({
+      id
+    }).then((res: any) => {
+      const list: any[] = res.info.specification;
+      const specificationIds = list.map(item => item.specificationId);
+      let selectData: any = {};
+      specificationIds.forEach(id => {
+        selectData[id] = [''];
+      })
+      // 深拷贝
+      this.selectData = JSON.parse(JSON.stringify(selectData));
+      this.specificationList = list;
+      this.getCategoryOption(specificationIds).then((values: any[]) => {
+        values.forEach((item, index) => {
+          this.setOptionData({
+            index,
+            parentId: item.specificationId,
+            data: item.specification
+          });
+        })
+        this.refreshSelectFn();
+      })
+    })
+  }
+
+  getCategoryList() {
+    http.category.list().then((res: any) => {
+      
+    })
+  }
+
+  onChangeParentId(parentId: number, index: number) {
+    console.log(parentId, index);
+    const specificationId = this.selectData[parentId][0];
+    this.options[index][parentId].children = {};
+    this.findBySpecificationId(specificationId).then((res: any) => {
+      if (res.info.length === 0) {
+        return;
+      }
+      const data = res.info[0];
+      this.setOptionData({
+        index,
+        parentId,
+        childId: data.specificationId,
+        data: data.specification
+      });
+      this.refreshSelectFn();
+    })
+  }
+  onChangeChildId(parentId: number, childId: number, index: number) {
+    console.log(parentId, childId, index);
+    const specificationId = childId;
+    // this.options[index][parentId].children = {};
+    this.findBySpecificationId(specificationId).then((res: any) => {
+      if (res.info.length === 0) {
+        return;
+      }
+      const data = res.info[0];
+      this.setOptionData({
+        index,
+        parentId,
+        childId,
+        data: data.specification
+      });
+      this.refreshSelectFn();
+    })
+  }
 
   submit() {
-
+    const { form } = this;
+    const formData = this.createBodyFormData();
+    const physical = this.physical.join(',');
+    formData.append('file', this.file);
+    formData.append('desc', form.desc);
+    formData.append('name', form.name);
+    formData.append('physical', physical);
+    formData.append('uploadBlockChain', form.uploadBlockChain);
+    formData.append('isPrivate', form.isPrivate);
+    formData.append('blockChainType', form.blockChainType);
+    formData.append('memo', 'test');
+    if (this.id !== '0') {
+      formData.append('id', this.id);
+    }
+    const postName = this.id === '0' ? 'upload' : 'update';
+    http.user[postName](formData).then((res) => {
+      
+    })
+  }
+  created() {
+    this.id = this.$route.query.id.toString();
+    this.getDetail();
+    this.getCategoryDetail(1);
+  }
+  mounted() {
+    this.$refs.uploader.addEventListener('change', () => {
+      const file = this.$refs.uploader.files[0];
+      lrz(file, {
+        width: 1024,
+        height: 1024
+      }).then((ret: any) => {
+        this.file = ret.file;
+        this.imgFile = ret.base64;
+      })
+    })
   }
 }
 </script>
@@ -196,5 +430,8 @@ export default class CertUpload extends Vue{
       width: 120px;
     }
   }
+}
+.selectItem{
+  margin-left: 20px;
 }
 </style>

@@ -9,7 +9,7 @@ export const routeObj = {
   routes: [
     {
       path: '/',
-      redirect: '/certificate/upload',
+      redirect: '/certificate/list',
       hide: true
     },
     {

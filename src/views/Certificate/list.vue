@@ -3,14 +3,15 @@
     <el-table
       :data="tableData"
       style="width: 100%"
+      v-loading="loading"
     >
       <el-table-column
-        prop="date"
+        prop="certificateName"
         label="名称"
         min-width="150"
       ></el-table-column>
       <el-table-column
-        prop="date"
+        prop="certificateSymbol"
         label="Symbol"
         min-width="150"
       ></el-table-column>
@@ -20,7 +21,9 @@
         width="100"
       >
         <template slot-scope="scope">
-          <img width="32" height="32" :src="scope.image" alt="">
+          <div class="img-container">
+            <img width="32" height="32" :src="scope.row.imageUrl" alt="">
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -29,24 +32,19 @@
         min-width="150"
       ></el-table-column>
       <el-table-column
-        prop="address"
+        prop="contractAddress"
         label="交易地址"
         min-width="150"
       ></el-table-column>
       <el-table-column
-        prop="date"
+        prop="createTime"
         label="发行时间"
         min-width="100"
       ></el-table-column>
       <el-table-column
-        prop="date"
+        prop="updateTime"
         label="修改时间"
         min-width="100"
-      ></el-table-column>
-      <el-table-column
-        prop="date"
-        label="名称"
-        min-width="150"
       ></el-table-column>
       <el-table-column
         prop="date"
@@ -56,13 +54,13 @@
       >
         <template slot-scope="scope">
           <el-button
-            @click.native.prevent="view(scope.$index, tableData)"
+            @click.native.prevent="view(scope.row.id)"
             type="text"
             size="small">
             查看
           </el-button>
           <el-button
-            @click.native.prevent="edit(scope.$index, tableData)"
+            @click.native.prevent="edit(scope.row.id)"
             type="text"
             size="small">
             编辑
@@ -84,23 +82,40 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
+import http from '@/api'
 
 @Component
 export default class CertList extends Vue{
+  loading: boolean = false;
   tableData: any[] = [];
   pagin: any = {
     pageNum: 1,
     pageRow: 10,
-    total: 20
+    total: 0
   }
-  view() {
-
+  getList() {
+    this.loading = true;
+    const { pagin } = this;
+    http.user.list({
+      ...pagin
+    }).then((res: any) => {
+      this.tableData = res.info;
+      this.loading = false;
+    }).catch(() => {
+      this.loading = false;
+    })
   }
-  edit() {
-
+  view(id: string) {
+    this.$router.push(`/certificate/upload?id=${id}`);
+  }
+  edit(id: string) {
+    this.$router.push(`/certificate/upload?id=${id}&action=edit`);
   }
   onCurrentChange(pageNum: number) {
     console.log(pageNum);
+  }
+  created() {
+    this.getList();
   }
 }
 </script>
@@ -108,5 +123,9 @@ export default class CertList extends Vue{
 .pagin-container{
   margin-top: 20px;
   text-align: right;
+}
+.img-container{
+  display: flex;
+  align-items: center;
 }
 </style>
