@@ -27,24 +27,24 @@
         </template>
       </el-table-column>
       <el-table-column
-        prop="date"
+        prop="author"
         label="发行人"
         min-width="150"
       ></el-table-column>
       <el-table-column
         prop="contractAddress"
-        label="交易地址"
+        label="合约地址"
         min-width="150"
       ></el-table-column>
       <el-table-column
         prop="createTime"
         label="发行时间"
-        min-width="100"
+        min-width="160"
       ></el-table-column>
       <el-table-column
         prop="updateTime"
         label="修改时间"
-        min-width="100"
+        min-width="160"
       ></el-table-column>
       <el-table-column
         prop="date"
@@ -83,6 +83,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component';
 import http from '@/api'
+import dayjs from 'dayjs';
 
 @Component
 export default class CertList extends Vue{
@@ -99,20 +100,26 @@ export default class CertList extends Vue{
     http.user.list({
       ...pagin
     }).then((res: any) => {
-      this.tableData = res.info;
+      this.pagin.total = res.info.totalCount;
+      this.tableData = res.info.list.map((item: any) => {
+        item.createTime = dayjs(item.createTime).format('YYYY-MM-DD hh:mm:ss');
+        item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD hh:mm:ss');
+        return item;
+      });
       this.loading = false;
     }).catch(() => {
       this.loading = false;
     })
   }
   view(id: string) {
-    this.$router.push(`/certificate/upload?id=${id}`);
+    this.$router.push(`/certificate/upload?id=${id}&action=view`);
   }
   edit(id: string) {
-    this.$router.push(`/certificate/upload?id=${id}&action=edit`);
+    this.$router.push(`/certificate/upload?id=${id}`);
   }
   onCurrentChange(pageNum: number) {
-    console.log(pageNum);
+    this.pagin.pageNum = pageNum;
+    this.getList();
   }
   created() {
     this.getList();

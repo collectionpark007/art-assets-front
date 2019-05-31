@@ -4,6 +4,7 @@ import { getUserToken, clearToken } from './auth';
 import { Notification } from 'element-ui';
 import { BASE_URL } from '../config/api';
 import router from '../router'
+import store from '@/store'
 
 const uploadUrl = [
   'upload'
@@ -61,6 +62,9 @@ service.interceptors.response.use(
         message: res.msg,
         type: 'warning'
       })
+      if (res.code === '10012') {
+        store.dispatch('logout', window.location.hash.substring(1));
+      }
       return Promise.reject(res);
     }
     return res;

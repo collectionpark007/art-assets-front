@@ -1,10 +1,10 @@
 <template>
   <div class="cert-upload-container">
-    <el-form label-position="top" :model="form">
+    <el-form label-position="top" :model="form" :disabled="!isEdit">
       <el-form-item label="图片">
         <div class="upload-container">
-          <input type="file" ref="uploader" class="uploader">
-          <i class="el-icon-upload" v-if="!form.imageUrl"></i>
+          <input type="file" ref="uploader" class="uploader" v-if="isEdit">
+          <i class="el-icon-upload" v-if="!imgFile"></i>
           <img class="image" v-else-if="imgFile" :src="imgFile" alt="">
           <img class="image" v-else-if="form.imageUrl" :src="form.imageUrl" alt="">
         </div>
@@ -29,20 +29,22 @@
                 :value="item.id"
               ></el-option>
             </el-select>
-            <el-select
-              class="selectItem"
-              v-for="(child, x) in options[index][item.specificationId].children"
-              :key="child.specificationId"
-              v-model="selectData[item.specificationId][x + 1]"
-              @change="onChangeChildId(selectData[item.specificationId][0], selectData[item.specificationId][x + 1], index)"
-            >
-              <el-option
-                v-for="childItem in child.option"
-                :key="childItem.id"
-                :label="childItem.specificationValue"
-                :value="childItem.id"
-              ></el-option>
-            </el-select>
+            <div v-if="selectData[item.specificationId][0]" class="inline-container">
+              <el-select
+                class="selectItem"
+                v-for="(child, x, i) in options[index][item.specificationId].children"
+                :key="child.specificationId"
+                v-model="selectData[item.specificationId][i + 1]"
+                @change="onChangeChildId(selectData[item.specificationId][0], selectData[item.specificationId][i + 1], index)"
+              >
+                <el-option
+                  v-for="childItem in child.option"
+                  :key="childItem.id"
+                  :label="childItem.specificationValue"
+                  :value="childItem.id"
+                ></el-option>
+              </el-select>
+            </div>
           </div>
         </div>
         <div class="group">
@@ -105,9 +107,12 @@
         </el-input>
       </el-form-item>
       <div class="handle-container">
-        <el-button type="primary" class="submit" @click="submit">提交</el-button>
+        <el-button type="primary" class="submit" @click="submit" :loading="loading" v-if="isEdit">提交</el-button>
       </div>
     </el-form>
+    <div class="handle-container">
+      <el-button type="primary" class="submit" v-if="!isEdit" @click="openRecordPage">存证记录</el-button>
+    </div>
   </div>
 </template>
 <script lang="ts">
@@ -116,6 +121,7 @@ import Component from 'vue-class-component';
 import http from '@/api'
 import { Watch } from 'vue-property-decorator';
 import lrz from 'lrz';
+import { url2Blob } from '@/utils';
 
 interface optionModal {
   index: number,
@@ -135,22 +141,69 @@ export default class CertUpload extends Vue{
   refreshSelect: boolean = false;
   selectData: any = {};
   specificationList: any[] = [];
+  loading: boolean = false;
   form: any = {
     name: '',
     physical: '',
-    blockChainType: 1,
-    memo: 'test'
+    isPrivate: 0,
+    uploadBlockChain: 1,
+    desc: '',
+    certificateSymbol: ''
   }
   file: any = '';
   imgFile: any = '';
   id: string = '';
+  isEdit: boolean = false;
 
   getDetail() {
     const { id } = this;
     http.home.detail({
       id
     }).then((res: any) => {
-      this.form = res.info;
+      const data = res.info;
+      this.form.name = data.certificateName;
+      this.form.isPrivate = data.isPrivate
+      this.form.uploadBlockChain = data.uploadBlockChain;
+      this.form.certificateSymbol = data.certificateSymbol;
+      this.form.desc = data.description;
+      this.imgFile = data.imageUrl;
+      this.physical = data.physicalProperty.split(',');
+      this.getSelectDataByPost(data.specificationData);
+      setTimeout(() => {
+        this.renderSelectElem();
+      }, 500);
+    })
+  }
+
+  getSelectDataByPost(specificationData: string) {
+    const array: any[] = JSON.parse(specificationData);
+    let parentIds: number[] = [];
+    array.forEach((item: string) => {
+      const ids: number[] = item.split(',').map((item: string) => Number(item.split('_')[0]));
+      const index = ids[0];
+      parentIds.push(index);
+      this.selectData[index] = ids.slice(1);
+    })
+  }
+
+  renderSelectElem() {
+    const { selectData } = this;
+    Object.keys(selectData).map((key: string, index: number) => {
+      const parentId = Number(key);
+      this.onChangeParentId(parentId, index);
+    })
+    Object.keys(selectData).map((key: string, index: number) => {
+      const parentId = Number(key);
+      if (selectData[key].length > 1) {
+        const children = selectData[key].slice(1);
+        children.map((childId: number, x: number) => {
+          setTimeout(() => {
+            this.onChangeChildId(parentId, childId, x + 1);
+          }, x * 100);
+        })
+      } else {
+        return;
+      }
     })
   }
 
@@ -168,7 +221,6 @@ export default class CertUpload extends Vue{
       }
       this.options[params.index][params.parentId].children[params.childId].option = params.data;
     } else {
-      console.log(this.options, params.index, params.parentId);
       if (typeof this.options[params.index][params.parentId] === 'undefined') {
         this.options[params.index][params.parentId] = {};
       }
@@ -285,14 +337,7 @@ export default class CertUpload extends Vue{
     })
   }
 
-  getCategoryList() {
-    http.category.list().then((res: any) => {
-      
-    })
-  }
-
   onChangeParentId(parentId: number, index: number) {
-    console.log(parentId, index);
     const specificationId = this.selectData[parentId][0];
     this.options[index][parentId].children = {};
     this.findBySpecificationId(specificationId).then((res: any) => {
@@ -310,7 +355,6 @@ export default class CertUpload extends Vue{
     })
   }
   onChangeChildId(parentId: number, childId: number, index: number) {
-    console.log(parentId, childId, index);
     const specificationId = childId;
     // this.options[index][parentId].children = {};
     this.findBySpecificationId(specificationId).then((res: any) => {
@@ -328,42 +372,64 @@ export default class CertUpload extends Vue{
     })
   }
 
+  openRecordPage() {
+    this.$router.push(`/certificate/upload/record?id=${this.id}`);
+  }
+
   submit() {
-    const { form } = this;
+    const { form, file } = this;
     const formData = this.createBodyFormData();
     const physical = this.physical.join(',');
-    formData.append('file', this.file);
+    if (file) {
+      formData.append('file', file);
+    } else {
+      formData.append('file', new File([], ''));
+    }
     formData.append('desc', form.desc);
     formData.append('name', form.name);
     formData.append('physical', physical);
     formData.append('uploadBlockChain', form.uploadBlockChain);
     formData.append('isPrivate', form.isPrivate);
-    formData.append('blockChainType', form.blockChainType);
-    formData.append('memo', 'test');
+    // formData.append('blockChainType', form.blockChainType);
+    formData.append('symbol', form.certificateSymbol)
     if (this.id !== '0') {
       formData.append('id', this.id);
     }
     const postName = this.id === '0' ? 'upload' : 'update';
+    this.loading = true;
     http.user[postName](formData).then((res) => {
-      
+      this.loading = false;
+      this.$notify.success('保存成功');
+      this.$router.back();
+    }).catch(() => {
+      this.loading = false;
     })
   }
+
   created() {
-    this.id = this.$route.query.id.toString();
-    this.getDetail();
+    const id = this.$route.query.id;
+    this.isEdit = this.$route.query.action !== 'view';
+    if (id) {
+      this.id = id.toString();
+      this.getDetail();
+    } else {
+      this.id = '0';
+    }
     this.getCategoryDetail(1);
   }
   mounted() {
-    this.$refs.uploader.addEventListener('change', () => {
-      const file = this.$refs.uploader.files[0];
-      lrz(file, {
-        width: 1024,
-        height: 1024
-      }).then((ret: any) => {
-        this.file = ret.file;
-        this.imgFile = ret.base64;
+    if (this.isEdit) {
+      this.$refs.uploader.addEventListener('change', () => {
+        const file = this.$refs.uploader.files[0];
+        lrz(file, {
+          width: 1024,
+          height: 1024
+        }).then((ret: any) => {
+          this.file = ret.file;
+          this.imgFile = ret.base64;
+        })
       })
-    })
+    }
   }
 }
 </script>
@@ -433,5 +499,24 @@ export default class CertUpload extends Vue{
 }
 .selectItem{
   margin-left: 20px;
+}
+.inline-container{
+  display: inline-block;
+}
+</style>
+<style lang="less">
+.cert-upload-container {
+  .el-input.is-disabled .el-input__inner,
+  .el-radio__input.is-disabled+span.el-radio__label,
+  .el-textarea.is-disabled .el-textarea__inner{
+    color: #333;
+  }
+  .el-radio__input.is-disabled.is-checked .el-radio__inner{
+    border-color: #409EFF;
+    background: #409EFF;
+  }
+  .el-radio__input.is-disabled.is-checked .el-radio__inner::after {
+    background-color: #F5F7FA;
+  }
 }
 </style>

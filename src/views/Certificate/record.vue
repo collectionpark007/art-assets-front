@@ -9,58 +9,101 @@
         style="width: 100%"
       >
         <el-table-column
-          prop="date"
+          prop="transactionHash"
           label="Txn Hash"
           min-width="150"
         >
           <template slot-scope="scope">
-            <a :href="scope.temp" target="_blank">{{scope.temp}}</a>
+            <a :href="scope.row.url" :title="scope.row.transactionHash" target="_blank">{{scope.row.transactionHash}}</a>
           </template>
         </el-table-column>
         <el-table-column
-          prop="date"
+          prop="blockNumber"
           label="Block"
           min-width="150"
         ></el-table-column>
         <el-table-column
-          prop="image"
+          prop="imageUrl"
           label="Image"
           width="100"
         >
           <template slot-scope="scope">
-            <a :href="scope.temp" target="_blank">{{scope.temp}}</a>
+            <a :href="scope.row.imageUrl" target="_blank"><img width="32" height="32" :src="scope.row.imageUrl" /></a>
           </template>
         </el-table-column>
         <el-table-column
-          prop="date"
+          prop="from"
           label="From"
           min-width="150"
         ></el-table-column>
         <el-table-column
-          prop="address"
+          prop="to"
           label="To"
           min-width="150"
         ></el-table-column>
         <el-table-column
-          prop="date"
+          prop="symbol"
           label="Symbol"
           min-width="100"
         ></el-table-column>
         <el-table-column
-          prop="date"
+          prop="gasUsed"
           label="[Txn Fee]"
           min-width="100"
         ></el-table-column>
       </el-table>
+      <div class="pagin-container">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :hide-on-single-page="pagin.total <= 1"
+          @current-change="onCurrentChange"
+          :total="pagin.total">
+        </el-pagination>
+      </div>
     </el-card>
   </div>
 </template>
 <script lang="ts">
 import Vue from 'vue'
+import http from '@/api'
+import Component from 'vue-class-component';
+
+@Component
 export default class CertRecord extends Vue{
-  
+
+  tableData: any = {};
+  pagin: any = {
+    pageNum: 1,
+    pageRow: 20,
+    total: 0
+  }
+  id: string = '';
+
+  getData(certificateId: string) {
+    console.log('certificateId', certificateId);
+    http.user.history({
+      certificateId
+    }).then((res: any) => {
+      this.tableData = res.info.list;
+    })
+  }
+
+  onCurrentChange(pageNum: number) {
+    this.pagin.pageNum = pageNum;
+    this.getData(this.id);
+  }
+
+  created() {
+    const certificateId = this.$route.query.id.toString();
+    this.id = certificateId;
+    this.getData(certificateId);
+  }
 }
 </script>
 <style lang="less" scoped>
-
+.pagin-container{
+  margin-top: 20px;
+  text-align: right;
+}
 </style>
