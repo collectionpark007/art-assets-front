@@ -9,16 +9,24 @@
         prop="certificateName"
         label="名称"
         min-width="150"
-      ></el-table-column>
+      >
+        <template slot-scope="scope">
+          <p class="over-hidden" :title="scope.row.certificateName">{{scope.row.certificateName}}</p>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="certificateSymbol"
         label="Symbol"
         min-width="150"
-      ></el-table-column>
+      >
+        <template slot-scope="scope">
+          <p class="over-hidden" :title="scope.row.certificateSymbol">{{scope.row.certificateSymbol}}</p>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="image"
         label="图片"
-        width="100"
+        width="60"
       >
         <template slot-scope="scope">
           <div class="img-container">
@@ -29,13 +37,21 @@
       <el-table-column
         prop="author"
         label="发行人"
-        min-width="150"
-      ></el-table-column>
+        min-width="90"
+      >
+        <template slot-scope="scope">
+          <p class="over-hidden" :title="scope.row.author">{{scope.row.author}}</p>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="contractAddress"
         label="合约地址"
-        min-width="150"
-      ></el-table-column>
+        min-width="320"
+      >
+        <template slot-scope="scope">
+          <p :title="scope.row.contractAddress" class="over-hidden">{{scope.row.contractAddress}}</p>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="createTime"
         label="发行时间"
@@ -49,7 +65,7 @@
       <el-table-column
         prop="date"
         label="操作"
-        width="150"
+        width="120"
         fixed="right"
       >
         <template slot-scope="scope">

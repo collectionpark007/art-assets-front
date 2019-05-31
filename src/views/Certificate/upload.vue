@@ -12,7 +12,7 @@
       <el-form-item label="基本信息" style="margin-bottom: 0;">
         <div class="item">
           <span class="label">艺术品名称：</span>
-          <div class="inputdiv"><el-input v-model="form.name" style="width: 320px;" placeholder="请输入商品名称/SPU"></el-input></div>
+          <div class="inputdiv"><el-input :disabled="isEdit" v-model="form.name" style="width: 320px;" placeholder="请输入商品名称/SPU"></el-input></div>
         </div>
         <div class="item" v-for="(item, index) in specificationList" :key="item.id">
           <span class="label">艺术品{{item.specificationName}}：</span>
@@ -77,7 +77,7 @@
         </div>
         <div class="item">
           <span class="label">Symbol：</span>
-          <div class="inputdiv"><el-input v-model="form.certificateSymbol" style="width: 320px;" placeholder="请输入Symbol"></el-input></div>
+          <div class="inputdiv"><el-input :disabled="isEdit" v-model="form.certificateSymbol" style="width: 320px;" placeholder="请输入Symbol"></el-input></div>
         </div>
         <div class="item">
           <span class="label">是否私有：</span>
@@ -385,13 +385,13 @@ export default class CertUpload extends Vue{
     } else {
       formData.append('file', new File([], ''));
     }
+    // formData.append('name', form.name);
+    // formData.append('symbol', form.certificateSymbol)
+    // formData.append('blockChainType', form.blockChainType);
     formData.append('desc', form.desc);
-    formData.append('name', form.name);
     formData.append('physical', physical);
     formData.append('uploadBlockChain', form.uploadBlockChain);
     formData.append('isPrivate', form.isPrivate);
-    // formData.append('blockChainType', form.blockChainType);
-    formData.append('symbol', form.certificateSymbol)
     if (this.id !== '0') {
       formData.append('id', this.id);
     }
