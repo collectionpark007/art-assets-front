@@ -2,7 +2,7 @@
   <div class="breadcrumb-container">
     <el-breadcrumb separator="/">
       <el-breadcrumb-item v-for="(item, index) in matchList" :key="item.path">
-        <router-link :to="item.path" v-if="matchList.length !== index + 1 && index !== 0">{{item.name}}</router-link>
+        <router-link :to="item.q ? `${item.path}${item.q}` : item.path" v-if="matchList.length !== index + 1 && index !== 0">{{item.name}}</router-link>
         <span v-else>{{item.name}}</span>
       </el-breadcrumb-item>
     </el-breadcrumb>
@@ -25,6 +25,10 @@ export default class Breadcrumb extends Vue{
         if (!item.meta.parent) {
           result.push(item);
         } else {
+          console.log(this.$route.query.id);
+          if (this.$route.query.id) {
+            item.meta.parent.q = '?id=' + this.$route.query.id;
+          }
           result.push(item.meta.parent);
           result.push(item);
         }

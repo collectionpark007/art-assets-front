@@ -1,118 +1,118 @@
 <template>
   <div class="cert-upload-container">
-    <el-form label-position="top" :model="form" :disabled="!isEdit">
-      <el-form-item label="图片">
-        <div class="upload-container">
-          <input type="file" ref="uploader" class="uploader" v-if="isEdit">
-          <i class="el-icon-upload" v-if="!imgFile"></i>
-          <img class="image" v-else-if="imgFile" :src="imgFile" alt="">
-          <img class="image" v-else-if="form.imageUrl" :src="form.imageUrl" alt="">
-        </div>
-      </el-form-item>
-      <el-form-item label="基本信息" style="margin-bottom: 0;">
-        <div class="item">
-          <span class="label">艺术品名称：</span>
-          <div class="inputdiv"><el-input :disabled="isEdit" v-model="form.name" style="width: 320px;" placeholder="请输入商品名称/SPU"></el-input></div>
-        </div>
-        <div class="item" v-for="(item, index) in specificationList" :key="item.id">
-          <span class="label">艺术品{{item.specificationName}}：</span>
-          <div class="inputdiv">
-            <el-select
-              v-if="refreshSelect"
-              v-model="selectData[item.specificationId][0]"
-              @change="onChangeParentId(item.specificationId, index)"
-            >
-              <el-option
-                v-for="item in options[index][item.specificationId].option"
-                :key="item.id"
-                :label="item.specificationValue"
-                :value="item.id"
-              ></el-option>
-            </el-select>
-            <div v-if="selectData[item.specificationId][0]" class="inline-container">
+    <el-card>
+      <el-form label-position="top" :model="form" :disabled="!isEdit">
+        <el-form-item label="图片">
+          <div class="upload-container">
+            <input type="file" ref="uploader" class="uploader" v-if="isEdit">
+            <i class="el-icon-upload" v-if="!imgFile"></i>
+            <img class="image" :style="`width: ${imageSize.w}px;height: ${imageSize.h}px;`" v-else-if="imgFile" :src="imgFile" alt="">
+            <img class="image" :style="`width: ${imageSize.w}px;height: ${imageSize.h}px;`" v-else-if="form.imageUrl" :src="form.imageUrl" alt="">
+          </div>
+        </el-form-item>
+        <el-form-item label="基本信息" style="margin-bottom: 0;">
+          <div class="item">
+            <span class="label">艺术品名称：</span>
+            <div class="inputdiv"><el-input :disabled="!isNew" v-model="form.name" style="width: 320px;" placeholder="请输入商品名称/SPU"></el-input></div>
+          </div>
+          <div class="item" v-for="(item, index) in specificationList" :key="item.id">
+            <span class="label">艺术品{{item.specificationName}}：</span>
+            <div class="inputdiv">
               <el-select
-                class="selectItem"
-                v-for="(child, x, i) in options[index][item.specificationId].children"
-                :key="child.specificationId"
-                v-model="selectData[item.specificationId][i + 1]"
-                @change="onChangeChildId(selectData[item.specificationId][0], selectData[item.specificationId][i + 1], index)"
+                v-if="refreshSelect"
+                v-model="selectData[item.specificationId][0]"
+                @change="onChangeParentId(item.specificationId, index)"
               >
                 <el-option
-                  v-for="childItem in child.option"
-                  :key="childItem.id"
-                  :label="childItem.specificationValue"
-                  :value="childItem.id"
+                  v-for="item in options[index][item.specificationId].option"
+                  :key="item.id"
+                  :label="item.specificationValue"
+                  :value="item.id"
                 ></el-option>
               </el-select>
+              <div v-if="selectData[item.specificationId][0]" class="inline-container">
+                <el-select
+                  class="selectItem"
+                  v-for="(child, x, i) in options[index][item.specificationId].children"
+                  :key="child.specificationId"
+                  v-model="selectData[item.specificationId][i + 1]"
+                  @change="onChangeChildId(selectData[item.specificationId][0], selectData[item.specificationId][i + 1], index)"
+                >
+                  <el-option
+                    v-for="childItem in child.option"
+                    :key="childItem.id"
+                    :label="childItem.specificationValue"
+                    :value="childItem.id"
+                  ></el-option>
+                </el-select>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="group">
-          <div class="item mult">
-            <span class="label">物理属性：</span>
-            <div class="inputdiv">
-              <el-input placeholder="长" class="input" v-model="physical[0]">
-                <span slot="suffix">cm</span>
-              </el-input>
-            </div>
-            <span>*</span>
-            <div class="inputdiv">
-              <el-input placeholder="宽" class="input" v-model="physical[1]">
-                <span slot="suffix">cm</span>
-              </el-input>
-            </div>
-            <span>*</span>
-            <div class="inputdiv">
-              <el-input placeholder="高" class="input" v-model="physical[2]">
-                <span slot="suffix">cm</span>
-              </el-input>
-            </div>
-            <span>*</span>
-            <div class="inputdiv">
-              <el-input placeholder="重量" class="input" v-model="physical[3]">
-                <span slot="suffix">g</span>
-              </el-input>
+          <div class="group">
+            <div class="item mult">
+              <span class="label">物理属性：</span>
+              <div class="inputdiv">
+                <el-input placeholder="长" class="input" v-model="physical[0]">
+                  <span slot="suffix">cm</span>
+                </el-input>
+              </div>
+              <span>*</span>
+              <div class="inputdiv">
+                <el-input placeholder="宽" class="input" v-model="physical[1]">
+                  <span slot="suffix">cm</span>
+                </el-input>
+              </div>
+              <span>*</span>
+              <div class="inputdiv">
+                <el-input placeholder="高" class="input" v-model="physical[2]">
+                  <span slot="suffix">cm</span>
+                </el-input>
+              </div>
+              <span>*</span>
+              <div class="inputdiv">
+                <el-input placeholder="重量" class="input" v-model="physical[3]">
+                  <span slot="suffix">g</span>
+                </el-input>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="item">
-          <span class="label">Symbol：</span>
-          <div class="inputdiv"><el-input :disabled="isEdit" v-model="form.certificateSymbol" style="width: 320px;" placeholder="请输入Symbol"></el-input></div>
-        </div>
-        <div class="item">
-          <span class="label">是否私有：</span>
-          <div class="radiodiv">
-            <el-radio-group v-model="form.isPrivate">
-              <el-radio :label="0">否</el-radio>
-              <el-radio :label="1">是</el-radio>
-            </el-radio-group>
+          <div class="item">
+            <span class="label">Symbol：</span>
+            <div class="inputdiv"><el-input :disabled="!isNew" v-model="form.certificateSymbol" style="width: 320px;" placeholder="请输入Symbol"></el-input></div>
           </div>
-        </div>
-        <div class="item">
-          <span class="label">是否上链：</span>
-          <div class="radiodiv">
-            <el-radio-group v-model="form.uploadBlockChain">
-              <el-radio :label="0">否</el-radio>
-              <el-radio :label="1">是</el-radio>
-            </el-radio-group>
+          <div class="item">
+            <span class="label">是否私有：</span>
+            <div class="radiodiv">
+              <el-radio-group v-model="form.isPrivate">
+                <el-radio :label="0">否</el-radio>
+                <el-radio :label="1">是</el-radio>
+              </el-radio-group>
+            </div>
           </div>
+          <div class="item">
+            <span class="label">是否上链：</span>
+            <div class="radiodiv">
+              <el-radio-group v-model="form.uploadBlockChain">
+                <el-radio :label="0">否</el-radio>
+                <el-radio :label="1">是</el-radio>
+              </el-radio-group>
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item label="相关描述">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 10}"
+            placeholder="请输入相关描述"
+            v-model="form.desc">
+          </el-input>
+        </el-form-item>
+        <div class="handle-container">
+          <el-button type="primary" class="submit" @click="submit" :loading="loading" v-if="isEdit">提交</el-button>
         </div>
-      </el-form-item>
-      <el-form-item label="相关描述">
-        <el-input
-          type="textarea"
-          :autosize="{ minRows: 2, maxRows: 10}"
-          placeholder="请输入相关描述"
-          v-model="form.desc">
-        </el-input>
-      </el-form-item>
-      <div class="handle-container">
-        <el-button type="primary" class="submit" @click="submit" :loading="loading" v-if="isEdit">提交</el-button>
-      </div>
-    </el-form>
-    <div class="handle-container">
-      <el-button type="primary" class="submit" v-if="!isEdit" @click="openRecordPage">存证记录</el-button>
-    </div>
+      </el-form>
+      
+    </el-card>
   </div>
 </template>
 <script lang="ts">
@@ -154,8 +154,10 @@ export default class CertUpload extends Vue{
   imgFile: any = '';
   id: string = '';
   isEdit: boolean = false;
+  isNew: boolean = false;
+  imageSize: any = {w: 83, h: 83};
 
-  getDetail() {
+  getDetail(cb?: Function) {
     const { id } = this;
     http.home.detail({
       id
@@ -169,9 +171,11 @@ export default class CertUpload extends Vue{
       this.imgFile = data.imageUrl;
       this.physical = data.physicalProperty.split(',');
       this.getSelectDataByPost(data.specificationData);
-      setTimeout(() => {
-        this.renderSelectElem();
-      }, 500);
+      this.getImageOriginSize(data.imageUrl).then((size) => {
+        let fitSize = this.fitImageSize(size);
+        this.imageSize = fitSize;
+      });
+      cb && cb();
     })
   }
 
@@ -183,6 +187,7 @@ export default class CertUpload extends Vue{
       const index = ids[0];
       parentIds.push(index);
       this.selectData[index] = ids.slice(1);
+      console.log('selectData', index, this.selectData);
     })
   }
 
@@ -190,21 +195,22 @@ export default class CertUpload extends Vue{
     const { selectData } = this;
     Object.keys(selectData).map((key: string, index: number) => {
       const parentId = Number(key);
+      console.log(parentId);
       this.onChangeParentId(parentId, index);
     })
-    Object.keys(selectData).map((key: string, index: number) => {
-      const parentId = Number(key);
-      if (selectData[key].length > 1) {
-        const children = selectData[key].slice(1);
-        children.map((childId: number, x: number) => {
-          setTimeout(() => {
-            this.onChangeChildId(parentId, childId, x + 1);
-          }, x * 100);
-        })
-      } else {
-        return;
-      }
-    })
+    // Object.keys(selectData).map((key: string, index: number) => {
+    //   const parentId = Number(key);
+    //   if (selectData[key].length > 1) {
+    //     const children = selectData[key].slice(1);
+    //     children.map((childId: number, x: number) => {
+    //       setTimeout(() => {
+    //         this.onChangeChildId(parentId, childId, x + 1);
+    //       }, x * 200);
+    //     })
+    //   } else {
+    //     return;
+    //   }
+    // })
   }
 
   setOptionData(params: optionModal) {
@@ -317,12 +323,14 @@ export default class CertUpload extends Vue{
     }).then((res: any) => {
       const list: any[] = res.info.specification;
       const specificationIds = list.map(item => item.specificationId);
-      let selectData: any = {};
-      specificationIds.forEach(id => {
-        selectData[id] = [''];
-      })
-      // 深拷贝
-      this.selectData = JSON.parse(JSON.stringify(selectData));
+      if (this.isNew) {
+        let selectData: any = {};
+        specificationIds.forEach(id => {
+          selectData[id] = [''];
+        })
+        // 深拷贝
+        this.selectData = JSON.parse(JSON.stringify(selectData));
+      }
       this.specificationList = list;
       this.getCategoryOption(specificationIds).then((values: any[]) => {
         values.forEach((item, index) => {
@@ -333,6 +341,11 @@ export default class CertUpload extends Vue{
           });
         })
         this.refreshSelectFn();
+        if (!this.isNew) {
+          setTimeout(() => {
+            this.renderSelectElem();
+          }, 0);
+        }
       })
     })
   }
@@ -385,8 +398,10 @@ export default class CertUpload extends Vue{
     } else {
       formData.append('file', new File([], ''));
     }
-    // formData.append('name', form.name);
-    // formData.append('symbol', form.certificateSymbol)
+    if (this.isNew) {
+      formData.append('name', form.name);
+      formData.append('symbol', form.certificateSymbol)
+    }
     // formData.append('blockChainType', form.blockChainType);
     formData.append('desc', form.desc);
     formData.append('physical', physical);
@@ -405,17 +420,54 @@ export default class CertUpload extends Vue{
       this.loading = false;
     })
   }
+  getImageOriginSize(url: string) {
+    const img = new Image();
+    let size = { w: 0, h: 0 }
+    return new Promise((resolve, reject) => {
+      img.onload = () => {
+      size.w = img.width;
+      size.h = img.height;
+      resolve(size);
+    }
+    img.src = url;
+    })
+  }
+  fitImageSize(size: any) {
+    const MAX_WIDTH = 400;
+    const MAX_HEIGHT = 400;
+    const originSize = { ...size };
+    let scale = 0;
+
+    if (originSize.w > originSize.h) {
+      if (originSize.w > MAX_WIDTH) {
+        scale = originSize.w / MAX_WIDTH;
+        originSize.w = MAX_WIDTH;
+        originSize.h /= scale;
+      }
+    } else {
+      if (originSize.h > MAX_HEIGHT) {
+        scale = originSize.h / MAX_HEIGHT;
+        originSize.h = MAX_HEIGHT;
+        originSize.w /= scale;
+      }
+    }
+    console.log(originSize);
+    return originSize;
+  }
 
   created() {
     const id = this.$route.query.id;
     this.isEdit = this.$route.query.action !== 'view';
     if (id) {
       this.id = id.toString();
-      this.getDetail();
+      this.getDetail(() => {
+        this.getCategoryDetail(1);
+      });
     } else {
       this.id = '0';
+      this.isNew = true;
+      this.getCategoryDetail(1);
     }
-    this.getCategoryDetail(1);
   }
   mounted() {
     if (this.isEdit) {
@@ -437,9 +489,10 @@ export default class CertUpload extends Vue{
 .cert-upload-container{
   padding-bottom: 50px;
   .upload-container{
+    display: inline-block;
+    min-width: 83px;
+    min-height: 83px;
     position: relative;
-    width: 85px;
-    height: 85px;
     border: 1px solid #D8D8D8;
     .el-icon-upload{
       position: absolute;

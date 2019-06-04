@@ -92,7 +92,7 @@ import Component from 'vue-class-component';
 @Component
 export default class CertRecord extends Vue{
 
-  tableData: any = {};
+  tableData: any = [];
   pagin: any = {
     pageNum: 1,
     pageRow: 20,

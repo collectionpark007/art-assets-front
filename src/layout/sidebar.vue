@@ -8,7 +8,8 @@
       background-color="#304156"
       text-color="#bfcbd9"
       active-text-color="#409eff"
-      :default-active="defaultActive">
+      :default-active="defaultActive"
+    >
       <div v-for="item in menuList" :key="item.name">
         <el-menu-item :index="item.path" :route="item.path" v-if="!item.children || item.children.length <= 1">
           <i :class="item.icon"></i>
@@ -30,14 +31,21 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 
 @Component({})
 export default class Sidebar extends Vue{
-  @Prop({default: true}) readonly isCollapse!: boolean;
+  @Prop({default: false}) readonly isCollapse!: boolean;
 
   defaultActive: string = '';
   menuList: any[] = [];
+  restart: boolean = true;
+
+  @Watch('$route')
+  onRouterChange() {
+    this.defaultActive = this.$route.path;
+  }
+
   created() {
     this.defaultActive = this.$route.path;
     this.menuList = this.$store.state.menuList;

@@ -1,55 +1,68 @@
 <template>
-  <div class="cert-list-container">
+  <div class="token-list-container">
     <el-table
       :data="tableData"
       style="width: 100%"
       v-loading="loading"
     >
       <el-table-column
-        prop="certificateName"
+        prop="contractName"
         label="名称"
-        min-width="150"
+        min-width="100"
       >
         <template slot-scope="scope">
-          <p class="over-hidden" :title="scope.row.certificateName">{{scope.row.certificateName}}</p>
+          <p class="over-hidden" :title="scope.row.contractName">{{scope.row.contractName}}</p>
         </template>
       </el-table-column>
       <el-table-column
-        prop="certificateSymbol"
-        label="Symbol"
-        min-width="150"
+        prop="contractSymbol"
+        label="简介"
+        min-width="100"
       >
         <template slot-scope="scope">
-          <p class="over-hidden" :title="scope.row.certificateSymbol">{{scope.row.certificateSymbol}}</p>
+          <p class="over-hidden" :title="scope.row.contractSymbol">{{scope.row.contractSymbol}}</p>
         </template>
       </el-table-column>
       <el-table-column
-        prop="image"
-        label="图片"
-        width="60"
+        prop="decimals"
+        label="小数位数"
+        min-width="80"
+      >
+      </el-table-column>
+      <el-table-column
+        prop="totalSupply"
+        label="发行总量"
+        min-width="100"
       >
         <template slot-scope="scope">
-          <div class="img-container">
-            <img width="32" height="32" :src="scope.row.imageUrl" alt="">
-          </div>
+          <p class="over-hidden" :title="scope.row.totalSupply">{{scope.row.totalSupply}}</p>
         </template>
       </el-table-column>
       <el-table-column
-        prop="author"
+        prop="address"
         label="发行人"
-        min-width="90"
+        min-width="200"
       >
         <template slot-scope="scope">
-          <p class="over-hidden" :title="scope.row.author">{{scope.row.author}}</p>
+          <p class="over-hidden" :title="scope.row.address">{{scope.row.address}}</p>
         </template>
       </el-table-column>
       <el-table-column
         prop="contractAddress"
         label="合约地址"
-        min-width="320"
+        min-width="200"
       >
         <template slot-scope="scope">
           <p :title="scope.row.contractAddress" class="over-hidden">{{scope.row.contractAddress}}</p>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="contractType"
+        label="合约类型"
+        min-width="80"
+      >
+        <template slot-scope="scope">
+          <p >{{scope.row.contractType === 1 ? 'Token20' : 'Token721'}}</p>
         </template>
       </el-table-column>
       <el-table-column
@@ -57,12 +70,7 @@
         label="发行时间"
         min-width="160"
       ></el-table-column>
-      <el-table-column
-        prop="updateTime"
-        label="修改时间"
-        min-width="160"
-      ></el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="date"
         label="操作"
         width="120"
@@ -82,8 +90,9 @@
             编辑
           </el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
+
     <div class="pagin-container">
       <el-pagination
         background
@@ -113,13 +122,13 @@ export default class CertList extends Vue{
   getList() {
     this.loading = true;
     const { pagin } = this;
-    http.user.list({
+    http.token.list({
+      contractType: 1,
       ...pagin
     }).then((res: any) => {
       this.pagin.total = res.info.totalCount;
       this.tableData = res.info.list.map((item: any) => {
         item.createTime = dayjs(item.createTime).format('YYYY-MM-DD hh:mm:ss');
-        item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD hh:mm:ss');
         return item;
       });
       this.loading = false;

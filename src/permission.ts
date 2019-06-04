@@ -9,6 +9,7 @@ const whiteList = [
 ]
 router.beforeEach((to, from, next) => {
   NProgress.start()
+
   if (Boolean(getToken())) {
     if (to.path.includes('/passport')) {
       NProgress.done();

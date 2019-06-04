@@ -31,14 +31,27 @@ export const routeObj = {
           component: () => import('@/views/Certificate/list.vue')
         },
         {
+          path: 'view',
+          name: '存证详情',
+          hide: true,
+          meta: {
+            parent: {
+              path: '/certificate/list',
+              name: '存证列表'
+            },
+          },
+          icon: 'el-icon-document',
+          component: () => import('@/views/Certificate/view.vue')
+        },
+        {
           path: 'upload/record',
           name: '存证记录',
           icon: 'el-icon-document',
           hide: true,
           meta: {
             parent: {
-              path: '/certificate/upload',
-              name: '上传存证'
+              path: '/certificate/view',
+              name: '存证详情'
             },
           },
           component: () => import('@/views/Certificate/record.vue')
@@ -52,6 +65,7 @@ export const routeObj = {
       meta: {
         rules: ['admin']
       },
+      hide: true,
       icon: 'el-icon-set-up',
       children: [
         {
@@ -91,6 +105,26 @@ export const routeObj = {
           },
           hide: true,
           component: () => import('./views/Attribute/size-new.vue')
+        },
+      ]
+    },
+    {
+      path: '/token',
+      name: '艺术品份额管理',
+      component: Layout,
+      icon: 'el-icon-tickets',
+      children: [
+        {
+          path: 'publish',
+          name: '艺术品份额发行',
+          icon: 'el-icon-copy-document',
+          component: () => import('./views/Token/publish.vue')
+        },
+        {
+          path: 'list',
+          name: '艺术品份额列表',
+          icon: 'el-icon-copy-document',
+          component: () => import('./views/Token/list.vue')
         },
       ]
     },

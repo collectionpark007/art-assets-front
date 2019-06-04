@@ -14,7 +14,7 @@
           </div>
           <div class="right">
             <el-dropdown>
-              <span><i class="el-icon-setting" style="margin-right: 15px"></i>{{userInfo.username}}</span>
+              <span><i class="el-icon-setting" style="margin-right: 15px"></i>{{userInfo && userInfo.username}}</span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item>
                   <router-link to="/">首页</router-link>
@@ -48,7 +48,7 @@ import { clearToken } from '@/utils/auth';
   }
 })
 export default class Layout extends Vue{
-  isCollapse: boolean = true;
+  isCollapse: boolean = false;
   userInfo: any = {};
   toggleMenu() {
     this.isCollapse = !this.isCollapse;
