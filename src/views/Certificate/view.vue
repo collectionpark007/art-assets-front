@@ -3,13 +3,27 @@
     <el-card>
       <div class="image-container">
         <h1>图片</h1>
-        <img :style="`width: ${imageSize.w}px; height: ${imageSize.h}px;`" :src="data.imageUrl" alt="">
+        <img
+          v-for="item in images"
+          :key="item.id"
+          :style="`width: ${item.size.w}px; height: ${item.size.h}px;`"
+          :src="item.src"
+          alt=""
+        >
       </div>
       <div class="info-container">
         <h1>基本信息</h1>
         <div class="line">
           <span class="title">艺术品名称：</span>
           <p class="value">{{data.certificateName}}</p>
+        </div>
+        <div class="line">
+          <span class="title">艺术品作者：</span>
+          <p class="value">{{data.author}}</p>
+        </div>
+        <div class="line">
+          <span class="title">创作时间：</span>
+          <p class="value">{{data.issuedTime}}</p>
         </div>
         <div class="line" v-for="(item, index) in specificationTitle" :key="item">
           <span class="title">艺术品{{item}}：</span>
@@ -35,6 +49,12 @@
           <span class="title">相关描述：</span>
           <p class="value">{{data.description}}</p>
         </div>
+        <div class="line">
+          <span class="title">流转记录：</span>
+          <div class="value">
+            <p class="record" v-for="item in data.circulationRecord" :key="item">{{item}}</p>
+          </div>
+        </div>
       </div>
       <div class="handle-container">
         <el-button type="primary" class="submit" @click="openRecordPage">存证记录</el-button>
@@ -54,7 +74,7 @@ export default class CertView extends Vue{
   specificationTitle: string[] = [];
   specificationValue: string[] = [];
   physical: string = '';
-  imageSize: any = {w: 0, h: 0}
+  images: any[] = [];
 
   getDetail(id: string) {
     http.home.detail({
@@ -64,11 +84,19 @@ export default class CertView extends Vue{
       this.specificationTitle = this.getSpecificationTitle(data.specificationData);
       this.specificationValue = this.getSpecificationValue(data.specificationData);
       this.physical = this.getPhysical(data.physicalProperty);
+      data.circulationRecord = data.circulationRecord.split(',');
       this.data = data;
-      this.getImageOriginSize(data.imageUrl).then((size) => {
-        let fitSize = this.fitImageSize(size);
-        this.imageSize = fitSize;
-      });
+      const images = data.imageUrl.split(',');
+      images.forEach((image: string) => {
+        this.getImageOriginSize(image).then((size) => {
+          let fitSize = this.fitImageSize(size);
+          this.images.push({
+            size: fitSize,
+            src: image,
+            id: new Date().getTime()
+          })
+        });
+      })
     })
   }
   getSpecificationTitle(specificationData: string): string[] {
@@ -103,18 +131,18 @@ export default class CertView extends Vue{
     })
   }
   fitImageSize(size: any) {
-    const MAX_WIDTH = 400;
-    const MAX_HEIGHT = 400;
+    const MAX_WIDTH = 0;
+    const MAX_HEIGHT = 150;
     const originSize = { ...size };
     let scale = 0;
 
-    if (originSize.w > originSize.h) {
+    if (originSize.w > originSize.h && !!MAX_WIDTH) {
       if (originSize.w > MAX_WIDTH) {
         scale = originSize.w / MAX_WIDTH;
         originSize.w = MAX_WIDTH;
         originSize.h /= scale;
       }
-    } else {
+    } else if (!!MAX_HEIGHT){
       if (originSize.h > MAX_HEIGHT) {
         scale = originSize.h / MAX_HEIGHT;
         originSize.h = MAX_HEIGHT;
@@ -146,6 +174,9 @@ export default class CertView extends Vue{
   }
   .image-container{
     margin-bottom: 22px;
+    img{
+      margin: 0 10px 10px 0;
+    }
   }
   .line{
     line-height: 40px;

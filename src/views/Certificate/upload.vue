@@ -1,19 +1,41 @@
 <template>
   <div class="cert-upload-container">
     <el-card>
-      <el-form label-position="top" :model="form" :disabled="!isEdit">
+      <el-form label-position="top" :model="form">
         <el-form-item label="图片">
           <div class="upload-container">
-            <input type="file" ref="uploader" class="uploader" v-if="isEdit">
-            <i class="el-icon-upload" v-if="!imgFile"></i>
-            <img class="image" :style="`width: ${imageSize.w}px;height: ${imageSize.h}px;`" v-else-if="imgFile" :src="imgFile" alt="">
-            <img class="image" :style="`width: ${imageSize.w}px;height: ${imageSize.h}px;`" v-else-if="form.imageUrl" :src="form.imageUrl" alt="">
+            <div class="image-con" v-for="item in images" :key="item.id" v-loading="item.loading">
+              <img :src="item.src" class="image" alt="" />
+              <i class="el-icon-error" @click="deleteImageItem(item.id)"></i>
+            </div>
+            <div class="upload-item" v-show="images.length < 4">
+              <input type="file" ref="uploader" class="uploader">
+              <i class="el-icon-upload"></i>
+            </div>
+            <!-- <img class="image" :style="`width: ${imageSize.w}px;height: ${imageSize.h}px;`" v-else-if="imgFile" :src="imgFile" alt="">
+            <img class="image" :style="`width: ${imageSize.w}px;height: ${imageSize.h}px;`" v-else-if="form.imageUrl" :src="form.imageUrl" alt=""> -->
           </div>
         </el-form-item>
         <el-form-item label="基本信息" style="margin-bottom: 0;">
           <div class="item">
             <span class="label">艺术品名称：</span>
-            <div class="inputdiv"><el-input :disabled="!isNew" v-model="form.name" style="width: 320px;" placeholder="请输入商品名称/SPU"></el-input></div>
+            <div class="inputdiv"><el-input :disabled="!isNew" v-model="form.name" style="width: 320px;" placeholder="请输入艺术品名称/SPU"></el-input></div>
+          </div>
+          <div class="item">
+            <span class="label">艺术品作者：</span>
+            <div class="inputdiv"><el-input v-model="form.author" style="width: 320px;" placeholder="请输入艺术品作者"></el-input></div>
+          </div>
+          <div class="item">
+            <span class="label">创作时间：</span>
+            <div class="inputdiv">
+              <el-date-picker
+                v-model="form.issuedTime"
+                type="date"
+                format="yyyy 年 MM 月 dd 日"
+                value-format="yyyy-MM-dd"
+                placeholder="选择创作时间">
+              </el-date-picker>
+            </div>
           </div>
           <div class="item" v-for="(item, index) in specificationList" :key="item.id">
             <span class="label">艺术品{{item.specificationName}}：</span>
@@ -50,7 +72,7 @@
           </div>
           <div class="group">
             <div class="item mult">
-              <span class="label">物理属性：</span>
+              <span class="label">作品规格：</span>
               <div class="inputdiv">
                 <el-input placeholder="长" class="input" v-model="physical[0]">
                   <span slot="suffix">cm</span>
@@ -107,11 +129,28 @@
             v-model="form.desc">
           </el-input>
         </el-form-item>
+        <el-form-item>
+          <div class="circulation-record">
+            <p>流转记录 <i class="el-icon-circle-plus" @click="newCirculationRecord"></i></p>
+            <div
+              v-for="item in circulationRecord"
+              :key="item.id"
+            >
+              <el-button class="delete-button" @click="deleteCirculationRecord(item.id)">删除</el-button>
+              <div class="record-input-con">
+                <el-input
+                  class="record-input"
+                  placeholder="请输入流转记录"
+                  v-model="item.value">
+                </el-input>
+              </div>
+            </div>
+          </div>
+        </el-form-item>
         <div class="handle-container">
-          <el-button type="primary" class="submit" @click="submit" :loading="loading" v-if="isEdit">提交</el-button>
+          <el-button type="primary" class="submit" @click="submit" :loading="loading">提交</el-button>
         </div>
       </el-form>
-      
     </el-card>
   </div>
 </template>
@@ -121,7 +160,7 @@ import Component from 'vue-class-component';
 import http from '@/api'
 import { Watch } from 'vue-property-decorator';
 import lrz from 'lrz';
-import { url2Blob } from '@/utils';
+import { url2Blob, object2formData } from '@/utils';
 
 interface optionModal {
   index: number,
@@ -150,12 +189,30 @@ export default class CertUpload extends Vue{
     desc: '',
     certificateSymbol: ''
   }
-  file: any = '';
-  imgFile: any = '';
+  files: any[] = [];
+  images: any[] = [];
   id: string = '';
-  isEdit: boolean = false;
   isNew: boolean = false;
   imageSize: any = {w: 83, h: 83};
+  circulationRecord: any[] = [{
+    value: '',
+    id: new Date().getTime()
+  }];
+
+  deleteCirculationRecord(id: number) {
+    const index = this.circulationRecord.findIndex(item => item.id === id);
+    console.log(id, index);
+    if (index > -1) {
+      this.circulationRecord.splice(index, 1);
+    }
+  }
+
+  newCirculationRecord() {
+    this.circulationRecord.push({
+      value: '',
+      id: new Date().getTime()
+    })
+  }
 
   getDetail(cb?: Function) {
     const { id } = this;
@@ -167,16 +224,35 @@ export default class CertUpload extends Vue{
       this.form.isPrivate = data.isPrivate
       this.form.uploadBlockChain = data.uploadBlockChain;
       this.form.certificateSymbol = data.certificateSymbol;
+      this.form.author = data.author;
+      this.form.issuedTime = data.issuedTime;
       this.form.desc = data.description;
-      this.imgFile = data.imageUrl;
+      this.circulationRecord = data.circulationRecord ? 
+        data.circulationRecord.split(',').map((item: any) => ({value: item, id: new Date().getTime()}))
+        : [{value: '', id: new Date().getTime()}]
+      this.images = data.imageUrl.split(',').map((item: any) => {
+        return {
+          id: new Date().getTime(),
+          src: item,
+          loading: false,
+        }
+      })
       this.physical = data.physicalProperty.split(',');
       this.getSelectDataByPost(data.specificationData);
-      this.getImageOriginSize(data.imageUrl).then((size) => {
-        let fitSize = this.fitImageSize(size);
-        this.imageSize = fitSize;
-      });
+      // this.getImageOriginSize(data.imageUrl).then((size) => {
+      //   let fitSize = this.fitImageSize(size);
+      //   this.imageSize = fitSize;
+      // });
       cb && cb();
     })
+  }
+
+  deleteImageItem(id: number) {
+    const index = this.images.findIndex(item => item.id === id);
+    if (index === -1) {
+      return;
+    }
+    this.images.splice(index, 1);
   }
 
   getSelectDataByPost(specificationData: string) {
@@ -390,23 +466,34 @@ export default class CertUpload extends Vue{
   }
 
   submit() {
-    const { form, file } = this;
-    const formData = this.createBodyFormData();
+    const { form, images } = this;
+    const formData: FormData = this.createBodyFormData();
     const physical = this.physical.join(',');
-    if (file) {
-      formData.append('file', file);
+    if (images.findIndex(item => item.loading) > -1) {
+      this.$message.warning('请等待所有图片上传完成');
+      return;
+    }
+    if (images.length > 0) {
+      const imageUrls = images.map(item => item.src).join(',');
+      formData.append('imageUrls', imageUrls)
     } else {
-      formData.append('file', new File([], ''));
+      this.$message.warning('请上传图片');
+      return;
     }
     if (this.isNew) {
       formData.append('name', form.name);
-      formData.append('symbol', form.certificateSymbol)
+      formData.append('symbol', form.certificateSymbol);
     }
     // formData.append('blockChainType', form.blockChainType);
+    formData.append('author', form.author);
+    formData.append('issuedTime', form.issuedTime);
     formData.append('desc', form.desc);
     formData.append('physical', physical);
     formData.append('uploadBlockChain', form.uploadBlockChain);
     formData.append('isPrivate', form.isPrivate);
+    const circulationRecord = this.circulationRecord.map(item => item.value).join(',');
+    formData.append('circulationRecord', circulationRecord);
+
     if (this.id !== '0') {
       formData.append('id', this.id);
     }
@@ -415,7 +502,7 @@ export default class CertUpload extends Vue{
     http.user[postName](formData).then((res) => {
       this.loading = false;
       this.$notify.success('保存成功');
-      this.$router.back();
+      this.$router.replace('/certificate/list');
     }).catch(() => {
       this.loading = false;
     })
@@ -455,9 +542,12 @@ export default class CertUpload extends Vue{
     return originSize;
   }
 
+  getImageItemById(id: number) {
+    return this.images.findIndex(item => item.id === id);
+  }
+
   created() {
     const id = this.$route.query.id;
-    this.isEdit = this.$route.query.action !== 'view';
     if (id) {
       this.id = id.toString();
       this.getDetail(() => {
@@ -470,18 +560,26 @@ export default class CertUpload extends Vue{
     }
   }
   mounted() {
-    if (this.isEdit) {
-      this.$refs.uploader.addEventListener('change', () => {
-        const file = this.$refs.uploader.files[0];
-        lrz(file, {
-          width: 1024,
-          height: 1024
-        }).then((ret: any) => {
-          this.file = ret.file;
-          this.imgFile = ret.base64;
+    this.$refs.uploader.addEventListener('change', () => {
+      const file = this.$refs.uploader.files[0];
+      lrz(file, {
+        width: 1024,
+        height: 1024
+      }).then((ret: any) => {
+        const id = new Date().getTime();
+        this.images.push({
+          id,
+          src: ret.base64,
+          loading: true,
+        });
+        http.common.uploadImage(ret.file).then((res: any) => {
+          const src = res.info;
+          const index = this.getImageItemById(id);
+          this.images[index].loading = false;
+          this.images[index].src = src;
         })
       })
-    }
+    })
   }
 }
 </script>
@@ -489,33 +587,51 @@ export default class CertUpload extends Vue{
 .cert-upload-container{
   padding-bottom: 50px;
   .upload-container{
-    display: inline-block;
-    min-width: 83px;
-    min-height: 83px;
-    position: relative;
-    border: 1px solid #D8D8D8;
-    .el-icon-upload{
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate3d(-50%, -50%, 0);
-      font-size: 22px;
-      color: #D8D8D8;
-      z-index: 1;
+    display: flex;
+    height: 83px;
+    align-items: center;
+    justify-content: flex-start;
+    .upload-item{
+      height: 100%;
+      width: 83px;
+      position: relative;
+      border: 1px solid #D8D8D8;
+      .el-icon-upload{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate3d(-50%, -50%, 0);
+        font-size: 22px;
+        color: #D8D8D8;
+        z-index: 1;
+      }
+      .uploader{
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        opacity: 0.01;
+        z-index: 2;
+      }
     }
-    .uploader{
-      position: absolute;
-      width: 100%;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      opacity: 0.01;
-      z-index: 2;
+    .image-con{
+      width: 83px;
+      height: 100%;
+      margin-right: 10px;
+      position: relative;
+      .el-icon-error{
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        font-size: 18px;
+        color: #fff;
+        z-index: 3000;
+      }
     }
     .image{
       width: 100%;
       height: 100%;
-      display: block;
     }
   }
   .item{
@@ -555,6 +671,27 @@ export default class CertUpload extends Vue{
 }
 .inline-container{
   display: inline-block;
+}
+.circulation-record{
+  p{
+    display: flex;
+    align-items: center;
+    i{
+      margin-left: 10px;
+      color: #409EFF;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  }
+  .record-input-con{
+    margin: 0 90px 15px 0;
+    .record-input{
+      width: 100%;
+    }
+  }
+  .delete-button{
+    float: right;
+  }
 }
 </style>
 <style lang="less">

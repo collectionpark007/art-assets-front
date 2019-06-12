@@ -16,7 +16,7 @@ export const routeObj = {
       path: '/certificate',
       name: '存证管理',
       component: Layout,
-      icon: 'el-icon-tickets',
+      icon: 'el-icon-setting',
       children: [
         {
           path: 'upload',
@@ -66,7 +66,7 @@ export const routeObj = {
         rules: ['admin']
       },
       hide: true,
-      icon: 'el-icon-set-up',
+      icon: 'el-icon-setting',
       children: [
         {
           path: 'category',
@@ -112,18 +112,18 @@ export const routeObj = {
       path: '/token',
       name: '艺术品份额管理',
       component: Layout,
-      icon: 'el-icon-tickets',
+      icon: 'el-icon-setting',
       children: [
         {
           path: 'publish',
           name: '艺术品份额发行',
-          icon: 'el-icon-copy-document',
+          icon: 'el-icon-s-promotion',
           component: () => import('./views/Token/publish.vue')
         },
         {
           path: 'list',
           name: '艺术品份额列表',
-          icon: 'el-icon-copy-document',
+          icon: 'el-icon-s-grid',
           component: () => import('./views/Token/list.vue')
         },
       ]

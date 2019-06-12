@@ -44,7 +44,7 @@
         min-width="200"
       >
         <template slot-scope="scope">
-          <p class="over-hidden" :title="scope.row.address">{{scope.row.address}}</p>
+          <a class="over-hidden" target="_blank" :href="scope.row.userAddressUrl" :title="scope.row.address">{{scope.row.address}}</a>
         </template>
       </el-table-column>
       <el-table-column
@@ -53,7 +53,7 @@
         min-width="200"
       >
         <template slot-scope="scope">
-          <p :title="scope.row.contractAddress" class="over-hidden">{{scope.row.contractAddress}}</p>
+          <a :href="scope.row.contractAddressUrl" target="_blank" :title="scope.row.contractAddress" class="over-hidden">{{scope.row.contractAddress}}</a>
         </template>
       </el-table-column>
       <el-table-column
@@ -159,5 +159,11 @@ export default class CertList extends Vue{
 .img-container{
   display: flex;
   align-items: center;
+}
+.token-list-container{
+  a{
+    text-decoration: underline;
+    color: rgb(64, 158, 255);
+  }
 }
 </style>

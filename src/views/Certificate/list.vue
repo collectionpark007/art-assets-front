@@ -49,7 +49,7 @@
         min-width="320"
       >
         <template slot-scope="scope">
-          <p :title="scope.row.contractAddress" class="over-hidden">{{scope.row.contractAddress}}</p>
+          <a :href="scope.row.url" :title="scope.row.contractAddress" class="over-hidden">{{scope.row.contractAddress}}</a>
         </template>
       </el-table-column>
       <el-table-column
@@ -120,6 +120,7 @@ export default class CertList extends Vue{
       this.tableData = res.info.list.map((item: any) => {
         item.createTime = dayjs(item.createTime).format('YYYY-MM-DD hh:mm:ss');
         item.updateTime = dayjs(item.updateTime).format('YYYY-MM-DD hh:mm:ss');
+        item.imageUrl = item.imageUrl.split(',')[0];
         return item;
       });
       this.loading = false;
@@ -143,12 +144,17 @@ export default class CertList extends Vue{
 }
 </script>
 <style lang="less" scoped>
-.pagin-container{
-  margin-top: 20px;
-  text-align: right;
-}
-.img-container{
-  display: flex;
-  align-items: center;
+.cert-list-container{
+  .pagin-container{
+    margin-top: 20px;
+    text-align: right;
+  }
+  .img-container{
+    display: flex;
+    align-items: center;
+  }
+  a.over-hidden {
+    text-decoration: underline;
+  }
 }
 </style>

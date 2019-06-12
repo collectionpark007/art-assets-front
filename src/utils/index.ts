@@ -15,3 +15,17 @@ export const url2Blob = (url: string) => {
     img.src = url;
   })
 }
+
+export const object2formData = (obj: any) => {
+  const params = new FormData();
+  Object.keys(obj).map((key) => {
+    const element = obj[key];
+    if (Array.isArray(element)) {
+      element.map(item => params.append(key, item));
+    } else {
+      params.append(key, element);
+    }
+    return null;
+  });
+  return params;
+};

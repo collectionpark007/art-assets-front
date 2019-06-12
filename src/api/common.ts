@@ -48,3 +48,13 @@ export const getKey = () => {
     method: 'get',
   })
 }
+
+export const uploadImage = (file) => {
+  const data = new FormData();
+  data.append('file', file);
+  return request({
+    url: `/api/common/upload_image`,
+    method: 'post',
+    data
+  })
+}

@@ -7,7 +7,8 @@ import router from '../router'
 import store from '@/store'
 
 const uploadUrl = [
-  'upload'
+  '/upload_image',
+  '/uploadDeposit'
 ];
 
 // 创建axios实例
