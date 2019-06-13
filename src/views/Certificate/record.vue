@@ -105,7 +105,11 @@ export default class CertRecord extends Vue{
     http.user.history({
       certificateId
     }).then((res: any) => {
-      this.tableData = res.info.list;
+      const list = res.info.list.map((item: any) => {
+        item.imageUrl = item.imageUrl.split(',')[0];
+        return item;
+      });
+      this.tableData = list;
     })
   }
 

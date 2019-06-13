@@ -163,7 +163,6 @@ export default class CertList extends Vue{
 .token-list-container{
   a{
     text-decoration: underline;
-    color: rgb(64, 158, 255);
   }
 }
 </style>

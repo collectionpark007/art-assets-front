@@ -103,7 +103,7 @@
             <div class="inputdiv"><el-input :disabled="!isNew" v-model="form.certificateSymbol" style="width: 320px;" placeholder="请输入Symbol"></el-input></div>
           </div>
           <div class="item">
-            <span class="label">是否私有：</span>
+            <span class="label">是否公开：</span>
             <div class="radiodiv">
               <el-radio-group v-model="form.isPrivate">
                 <el-radio :label="0">否</el-radio>

@@ -17,9 +17,6 @@
               <span><i class="el-icon-setting" style="margin-right: 15px"></i>{{userInfo && userInfo.username}}</span>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item>
-                  <router-link to="/">首页</router-link>
-                </el-dropdown-item>
-                <el-dropdown-item divided>
                   <a href="javascript:;" @click="logout">退出登录</a>
                 </el-dropdown-item>
               </el-dropdown-menu>

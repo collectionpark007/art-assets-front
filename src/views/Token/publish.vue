@@ -23,15 +23,16 @@
       </el-form>
     </el-card>
     <el-dialog
-      :title="`${form.name}发行成功`"
+      title="发行成功"
       :visible.sync="dialogVisible"
       width="50%"
       :before-close="finish"
     >
       <div class="finished-container">
         <div class="list">
-          <p>地址：{{successMsg.address}}</p>
-          <p>总量：{{successMsg.totalSupply}}</p>
+          <p>主链同步处理中</p>
+          <!-- <p>地址：{{successMsg.address}}</p> -->
+          <!-- <p>总量：{{successMsg.totalSupply}}</p> -->
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -92,12 +93,17 @@ export default class TokenPublish extends Vue{
       }).then((res: any) => {
         const info = res.info;
         loading.close();
-        this.$notify.success('提交成功');
-        this.successMsg.address = info.contractAddress;
-        this.successMsg.totalSupply = info.totalSupply;
-        this.dialogVisible = true;
+        this.$notify.success({
+          title: '发行成功',
+          message: '主链同步处理中'
+        });
+        this.finish();
+        // this.successMsg.address = info.contractAddress;
+        // this.successMsg.totalSupply = info.totalSupply;
+        // this.dialogVisible = true;
       }).catch(() => {
         loading.close();
+        this.$notify.error('发行失败');
       })
     });
   }

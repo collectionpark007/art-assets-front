@@ -30,7 +30,7 @@
           <p class="value">{{specificationValue[index]}}</p>
         </div>
         <div class="line">
-          <span class="title">物理属性：</span>
+          <span class="title">作品规格：</span>
           <p class="value">{{physical}}</p>
         </div>
         <div class="line">
@@ -38,7 +38,7 @@
           <p class="value">{{data.certificateSymbol}}</p>
         </div>
         <div class="line">
-          <span class="title">是否私有：</span>
+          <span class="title">是否公开：</span>
           <p class="value">{{data.isPrivate === 0 ? '否' : '是'}}</p>
         </div>
         <div class="line">
@@ -84,7 +84,7 @@ export default class CertView extends Vue{
       this.specificationTitle = this.getSpecificationTitle(data.specificationData);
       this.specificationValue = this.getSpecificationValue(data.specificationData);
       this.physical = this.getPhysical(data.physicalProperty);
-      data.circulationRecord = data.circulationRecord.split(',');
+      data.circulationRecord = data.circulationRecord && data.circulationRecord.split(',');
       this.data = data;
       const images = data.imageUrl.split(',');
       images.forEach((image: string) => {
@@ -116,7 +116,20 @@ export default class CertView extends Vue{
 
   getPhysical(physicalProperty: string) {
     const physicalArray = physicalProperty.split(',');
-    return `长：${physicalArray[0]} cm 宽：${physicalArray[1]} cm 高：${physicalArray[2]} cm 重量：${physicalArray[3]} g`
+    let result = '';
+    if (physicalArray[0]) {
+      result += `长：${physicalArray[0]} cm `;
+    }
+    if (physicalArray[1]) {
+      result += `宽：${physicalArray[1]} cm `;
+    }
+    if (physicalArray[2]) {
+      result += `高：${physicalArray[2]} cm `;
+    }
+    if (physicalArray[3]) {
+      result += `重量：${physicalArray[3]} g`;
+    }
+    return result;
   }
   getImageOriginSize(url: string) {
     const img = new Image();
