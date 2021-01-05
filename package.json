@@ -10,7 +10,7 @@
     "@types/js-cookie": "^2.2.2",
     "@types/nprogress": "^0.0.29",
     "@types/path-to-regexp": "^1.7.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "core-js": "^2.6.5",
     "dayjs": "^1.8.14",
     "element-ui": "^2.8.2",
